@@ -112,6 +112,14 @@ WINDOW_ICONS = {
     'yelp': fa.icons['code'],
     'zenity': fa.icons['window-maximize'],
     'zoom': fa.icons['comment'],
+    'jetbrains-idea': fa.icons['java'],
+    'jetbrains-idea-ce': fa.icons['java'],
+    'DBeaver': fa.icons['database'],
+    'code': fa.icons['file'],
+    'Code': fa.icons['file'],
+    'trello desktop': fa.icons['file'],
+    'guake': fa.icons['terminal'],
+    'terminator': fa.icons['terminal'],
 }
 
 # This icon is used for any application not in the list above
@@ -120,7 +128,7 @@ DEFAULT_ICON = '*'
 # Global setting that determines whether workspaces will be automatically
 # re-numbered in ascending order with a "gap" left on each monitor. This is
 # overridden via command-line flag.
-RENUMBER_WORKSPACES = True
+RENUMBER_WORKSPACES = False
 
 
 def ensure_window_icons_lowercase():
@@ -150,25 +158,27 @@ def rename_workspaces(i3, icon_list_format='default'):
     n = 1
     for ws_index, workspace in enumerate(i3.get_tree().workspaces()):
         ws_info = ws_infos[ws_index]
-
+        
         name_parts = parse_workspace_name(workspace.name)
         icon_list = [icon_for_window(w) for w in workspace.leaves()]
         new_icons = format_icon_list(icon_list, icon_list_format)
-
+        #print(workspace.name, name_parts)
         # As we enumerate, leave one gap in workspace numbers between each monitor.
         # This leaves a space to insert a new one later.
-        if ws_info.output != prev_output and prev_output != None:
-            n += 1
+        #if ws_info.output != prev_output and prev_output != None:
+        #    n += 1
+        
         prev_output = ws_info.output
 
         # optionally renumber workspace
-        new_num = n if RENUMBER_WORKSPACES else name_parts.num
-        n += 1
+        new_num = name_parts.num
+        #n += 1
 
         new_name = construct_workspace_name(
             NameParts(num=new_num,
                       shortname=name_parts.shortname,
                       icons=new_icons))
+        #print(new_name)
         if workspace.name == new_name:
             continue
         i3.command('rename workspace "%s" to "%s"' %
