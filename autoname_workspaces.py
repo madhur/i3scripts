@@ -35,6 +35,7 @@ import logging
 import signal
 import sys
 import fontawesome as fa
+import time
 
 from util import *
 
@@ -117,7 +118,7 @@ WINDOW_ICONS = {
     'DBeaver': fa.icons['database'],
     'code': fa.icons['file'],
     'Code': fa.icons['file'],
-    'trello desktop': fa.icons['file'],
+    'trello desktop': fa.icons['trello'],
     'guake': fa.icons['terminal'],
     'terminator': fa.icons['terminal'],
 }
@@ -153,27 +154,20 @@ def icon_for_window(window):
 # also renumbers them in ascending order, with one gap left between monitors
 # for example: workspace numbering on two monitors: [1, 2, 3], [5, 6]
 def rename_workspaces(i3, icon_list_format='default'):
+    start = time.time()
     ws_infos = i3.get_workspaces()
-    prev_output = None
-    n = 1
+    
+    
     for ws_index, workspace in enumerate(i3.get_tree().workspaces()):
         ws_info = ws_infos[ws_index]
         
         name_parts = parse_workspace_name(workspace.name)
         icon_list = [icon_for_window(w) for w in workspace.leaves()]
         new_icons = format_icon_list(icon_list, icon_list_format)
-        #print(workspace.name, name_parts)
-        # As we enumerate, leave one gap in workspace numbers between each monitor.
-        # This leaves a space to insert a new one later.
-        #if ws_info.output != prev_output and prev_output != None:
-        #    n += 1
-        
-        prev_output = ws_info.output
-
+    
         # optionally renumber workspace
         new_num = name_parts.num
-        #n += 1
-
+    
         new_name = construct_workspace_name(
             NameParts(num=new_num,
                       shortname=name_parts.shortname,
@@ -183,6 +177,9 @@ def rename_workspaces(i3, icon_list_format='default'):
             continue
         i3.command('rename workspace "%s" to "%s"' %
                    (workspace.name, new_name))
+        end = time.time()
+        print("Completed rename loop in (milliseconds): ", (end - start)*1000)
+
 
 
 # Rename workspaces to just numbers and shortnames, removing the icons.
@@ -239,7 +236,9 @@ if __name__ == '__main__':
 
     # Call rename_workspaces() for relevant window events
     def event_handler(i3, e):
+        
         if e.change in ['new', 'close', 'move']:
+            print(e)
             rename_workspaces(i3, icon_list_format=args.icon_list_format)
 
     i3.on('window', event_handler)
